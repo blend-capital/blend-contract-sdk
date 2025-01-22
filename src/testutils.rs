@@ -1,4 +1,4 @@
-use soroban_sdk::{token::StellarAssetClient, vec, Address, Env, Vec};
+use soroban_sdk::{testutils::Address as _, token::StellarAssetClient, vec, Address, Env, Vec};
 
 use crate::{backstop, emitter, pool, pool_factory};
 
@@ -22,6 +22,8 @@ pub fn default_reserve_config() -> pool::ReserveConfig {
         r_three: 1_5000000,
         reactivity: 0_0000020, // 2e-6
         index: 0,
+        collateral_cap: 100_000_000_0000000,
+        enabled: true,
     }
 }
 
@@ -52,10 +54,10 @@ impl<'a> BlendFixture<'a> {
         usdc: &Address,
     ) -> BlendFixture<'a> {
         env.cost_estimate().budget().reset_unlimited();
-        let backstop = env.register(backstop::WASM, ());
         let emitter = env.register(emitter::WASM, ());
+        let backstop = Address::generate(&env);
+        let pool_factory = Address::generate(&env);
         let comet = env.register(comet::WASM, ());
-        let pool_factory = env.register(pool_factory::WASM, ());
         let blnd_client = StellarAssetClient::new(env, &blnd);
         let usdc_client = StellarAssetClient::new(env, &usdc);
         blnd_client
@@ -86,27 +88,36 @@ impl<'a> BlendFixture<'a> {
             .mock_all_auths()
             .initialize(&blnd, &backstop, &comet);
 
-        let backstop_client: backstop::Client<'a> = backstop::Client::new(env, &backstop);
-        backstop_client.mock_all_auths().initialize(
-            &comet,
-            &emitter,
-            &usdc,
-            &blnd,
-            &pool_factory,
-            &Vec::new(env),
+        env.register_at(
+            &backstop,
+            backstop::WASM,
+            (
+                comet,
+                emitter,
+                blnd,
+                usdc,
+                pool_factory.clone(),
+                Vec::<(Address, i128)>::new(&env),
+            ),
         );
+        let backstop_client: backstop::Client<'a> = backstop::Client::new(env, &backstop);
 
         let pool_hash = env.deployer().upload_contract_wasm(pool::WASM);
 
-        let pool_factory_client = pool_factory::Client::new(env, &pool_factory);
-        pool_factory_client
-            .mock_all_auths()
-            .initialize(&pool_factory::PoolInitMeta {
+        env.register_at(
+            &pool_factory,
+            pool_factory::WASM,
+            (pool_factory::PoolInitMeta {
                 backstop,
                 blnd_id: blnd.clone(),
                 pool_hash,
-            });
+            },),
+        );
+        let pool_factory_client = pool_factory::Client::new(env, &pool_factory);
+
         backstop_client.update_tkn_val();
+
+        env.cost_estimate().budget().reset_default();
 
         BlendFixture {
             backstop: backstop_client,
