@@ -115,8 +115,6 @@ impl<'a> BlendFixture<'a> {
         );
         let pool_factory_client = pool_factory::Client::new(env, &pool_factory);
 
-        backstop_client.update_tkn_val();
-
         env.cost_estimate().budget().reset_default();
 
         BlendFixture {
