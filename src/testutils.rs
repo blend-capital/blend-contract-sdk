@@ -160,8 +160,9 @@ mod tests {
             &String::from_str(&env, "test"),
             &BytesN::<32>::random(&env),
             &Address::generate(&env),
-            &0_1000000, // 10%
+            &0_1000000, // 10% take rate
             &4,         // 4 max positions
+            &1_0000000, // $1 min collateral needed to borrow assuming oracle reports $ and is 7 decimals
         );
         let pool_client = pool::Client::new(&env, &pool);
         let reserve_config = default_reserve_config();
