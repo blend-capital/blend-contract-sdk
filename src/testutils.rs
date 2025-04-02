@@ -22,7 +22,7 @@ pub fn default_reserve_config() -> pool::ReserveConfig {
         r_three: 1_5000000,
         reactivity: 0_0000020, // 2e-6
         index: 0,
-        collateral_cap: 100_000_000_0000000,
+        supply_cap: 100_000_000_0000000,
         enabled: true,
     }
 }
