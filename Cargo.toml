@@ -1,6 +1,6 @@
 [package]
 name = "blend-contract-sdk"
-version = "2.23.0"
+version = "2.25.0"
 description = "Traits, clients, types, and WASMs for the Blend Protocol for use in Soroban contract development."
 homepage = "https://github.com/blend-capital/blend-contract-sdk"
 repository = "https://github.com/blend-capital/blend-contract-sdk"
@@ -19,7 +19,7 @@ testutils = [
 ]
 
 [dependencies]
-soroban-sdk = { version = "23.0.3" }
+soroban-sdk = { version = "25.0.1" }
 
 [dev-dependencies]
-soroban-sdk = { version = "23.0.3", features = ["testutils"] }
+soroban-sdk = { version = "25.0.1", features = ["testutils"] }
